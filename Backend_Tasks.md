@@ -1,258 +1,472 @@
 # Salon & Beauty Parlour Management App
+
 ## Backend Task Plan (Go + Fiber + PostgreSQL)
-_Single Developer Execution Plan_
+
+_Single Developer • Backend-First • Multi-Tenant SaaS_
+
+This document is the **single source of truth** for backend development.
+It explains **what to build, in what order, and why**, so that:
+
+- Future changes are easy
+- A new contributor (or future me) can understand everything
+- Backend architecture stays clean and scalable
+
+---
+
+## Core Product Decisions (Locked for MVP)
+
+- Multi-tenant SaaS (every business is isolated by `business_id`)
+- Backend-first development
+- Single backend service
+- Default language: **English**
+- Optional language: **Hindi**
+- Language selection is **client-driven** (header-based)
+- No feature is 100% final — changes are allowed if documented here
+
+---
+
+## Tech Stack
+
+- Language: **Go**
+- Framework: **Fiber**
+- Database: **PostgreSQL (Neon)**
+- Auth: **JWT**
+- API Style: **REST**
+- Architecture: **Controller → Service → Repository**
+- Localization: **Backend-driven messages (i18n-ready)**
+
+---
+
+## Folder Structure (Target)
+
+```
+salon-app-backend/
+├── main.go
+├── internal/
+│ ├── config/
+│ ├── db/
+│ ├── models/
+│ ├── controllers/
+│ ├── services/
+│ ├── routes/
+│ ├── middleware/
+│ ├── i18n/
+│ └── utils/
+├── docs/
+├── README.md
+├── Backend_Tasks.md
+├── go.mod
+└── .gitignore
+```
 
 ---
 
 ## Phase 0 — Backend Foundation & Setup
 
 ### 0.1 Repository & Project Setup
+
 - Initialize GitHub repository
+
 - Add `.gitignore`, `README.md`
-- Initialize Go module (`go mod init`)
-- Decide base folder structure
-- Add environment config loader (`.env`)
-- Setup basic logging strategy
 
-### 0.2 Tech Stack Confirmation
-- Backend: Go + Fiber
-- Database: PostgreSQL (Neon)
-- Auth: JWT
-- API Style: REST
-- Architecture: Controller → Service → Repository
+- Initialize Go module
 
----
+- Keep `main.go` at project root
 
-## Phase 1 — Core Backend Architecture
+- Setup basic logging
 
-### 1.1 Project Structure Setup
-- Create folders:
-  - `config/`
-  - `db/`
-  - `models/`
-  - `controllers/`
-  - `services/`
-  - `routes/`
-  - `middleware/`
-  - `utils/`
-  - `docs/`
-- Setup `main.go`
-- Setup Fiber app initialization
+- Prepare `.env` based config loading
+
+### 0.2 Application Bootstrapping
+
+- Initialize Fiber app
+
+- Add `/health` endpoint
+
 - Setup graceful shutdown
 
-### 1.2 Database Connection
-- PostgreSQL connection setup
-- Connection pooling
-- Health check endpoint
-- DB connection error handling
+- Verify server starts correctly
 
 ---
 
-## Phase 2 — Multi-Tenant Database Design (VERY IMPORTANT)
+## Phase 1 — Configuration & Database Layer
 
-### 2.1 Core Tables Design
+### 1.1 Configuration Management
+
+- Environment variable loader
+
+- App config struct
+
+- DB config struct
+
+- JWT config struct
+
+### 1.2 Database Connection
+
+- PostgreSQL connection setup
+
+- Connection pooling
+
+- Health check
+
+- Central DB access layer
+
+---
+
+## Phase 2 — Multi-Tenant Database Design (CRITICAL)
+
+### 2.1 Core Tables (All tenant data scoped by `business_id`)
+
 - Admins
-- Businesses (tenant)
+
+- Businesses
+
 - Staff
+
 - Services
+
 - Customers
+
 - Bookings
+
 - Payments
 
 ### 2.2 Database Migrations
-- Choose migration tool (Goose / sql-migrate / manual)
-- Write migration files for:
-  - Create tables
-  - Foreign keys
-  - Indexes
-- Add:
-  - `business_id` in all tenant-scoped tables
+
+- Choose migration approach
+
+- Create tables with:
+  - Proper foreign keys
+
+  - Indexes for performance
+
   - Unique constraints (phone per business)
-  - Booking time indexes
+
+- Booking time conflict-safe indexes
 
 ### 2.3 Seed Data (Optional)
+
 - Seed admin
+
 - Seed sample business
-- Seed services & staff
+
+- Seed staff and services
 
 ---
 
 ## Phase 3 — Authentication & Authorization
 
 ### 3.1 Admin Authentication
-- Admin signup
-- Admin login
+
+- Signup
+
+- Login
+
 - Password hashing
-- JWT token generation
-- Token refresh strategy (simple)
+
+- JWT generation
 
 ### 3.2 Staff Authentication
-- Staff login using phone + PIN
+
+- Phone + PIN login
+
 - PIN hashing
-- JWT generation for staff
-- Role identification in token
 
-### 3.3 Role-Based Access Control (RBAC)
-- Admin-only routes
-- Staff-limited routes
-- Business isolation enforcement
+- JWT with role and business context
+
+### 3.3 Role-Based Access Control
+
+- Middleware for:
+  - Admin-only routes
+
+  - Staff-limited routes
+
+- Enforce business isolation at API level
 
 ---
 
-## Phase 4 — Business & Staff Management APIs
+## Phase 4 — Localization (English + Hindi)
 
-### 4.1 Business APIs
+### 4.1 Localization Strategy (IMPORTANT)
+
+- Default language: **English**
+
+- Optional language: **Hindi**
+
+- Language selected via request header:
+
+`Accept-Language: en | hi`
+
+- Backend controls:
+
+- Error messages
+
+- Success messages
+
+- System responses
+
+### 4.2 i18n Structure
+
+- Create `internal/i18n/`
+
+- Language files:
+
+- `en.json`
+
+- `hi.json`
+
+- Key-based messages:
+
+`booking.created`
+
+`auth.invalid_credentials`
+
+`staff.not_found`
+
+### 4.3 Localization Middleware
+
+- Read `Accept-Language` header
+
+- Default to English if missing/invalid
+
+- Inject language context into request
+
+### 4.4 Usage Rules
+
+- No hardcoded user-facing strings in controllers
+
+- All responses use message keys
+
+- Frontend does NOT translate backend errors
+
+---
+
+## Phase 5 — Business & Staff Management APIs
+
+### 5.1 Business APIs
+
 - Create business
-- List admin businesses
+
+- List businesses for admin
+
 - Update business details
-- Trial period logic
 
-### 4.2 Staff APIs
+- Trial period tracking
+
+### 5.2 Staff APIs
+
 - Add staff
+
 - Update staff
+
 - Activate / deactivate staff
+
 - Assign staff to business
-- Staff listing per business
+
+- List staff per business
 
 ---
 
-## Phase 5 — Service Management
+## Phase 6 — Service Management
 
-### 5.1 Service APIs
+### 6.1 Service APIs
+
 - Create service
+
 - Update service
+
 - Enable / disable service
+
 - List services per business
-- Service duration & price handling
+
+- Duration and pricing logic
 
 ---
 
-## Phase 6 — Customer Management
+## Phase 7 — Customer Management
 
-### 6.1 Customer Logic
+### 7.1 Customer Logic
+
 - Auto-create customer on booking
-- Customer lookup by phone
-- Customer visit history
-- Last visit tracking
 
-### 6.2 Customer APIs
-- List customers per business
+- Lookup by phone number
+
+- Track visit history
+
+- Track last visit
+
+### 7.2 Customer APIs
+
+- List customers
+
 - View customer profile
+
 - View booking history
 
 ---
 
-## Phase 7 — Booking Engine (CORE LOGIC)
+## Phase 8 — Booking Engine (CORE LOGIC)
 
-### 7.1 Booking Rules
-- Pending → Admin approval → Confirmed
-- Customer selects staff (optional)
+### 8.1 Booking Rules
+
+- Booking flow:
+
+`Pending → Admin Approved → Confirmed → Completed`
+
+- Customer may select staff (optional)
+
 - Admin assigns staff if missing
-- Same working hours every day
 
-### 7.2 Slot & Conflict Handling
-- Service duration based slot calculation
+- Fixed daily working hours
+
+### 8.2 Slot & Conflict Handling
+
+- Service-duration-based slots
+
 - Prevent overlapping bookings
-- Staff availability check
-- Business time zone handling
 
-### 7.3 Booking APIs
+- Staff availability checks
+
+- Timezone-safe logic
+
+### 8.3 Booking APIs
+
 - Create booking
+
 - Approve booking
+
 - Reschedule booking
-- Cancel booking (admin only)
+
+- Cancel booking (admin)
+
 - Complete booking
 
 ---
 
-## Phase 8 — Billing & Payments (MVP)
+## Phase 9 — Billing & Payments (MVP)
 
-### 8.1 Payment Logic
-- Create bill from booking
-- Payment modes: Cash / UPI / Gateway
-- Store payment records
+### 9.1 Billing Logic
+
+- Generate bill from booking
+
+- Payment modes:
+
+- Cash
+
+- UPI
+
+- Gateway (future)
+
 - Daily revenue calculation
 
-### 8.2 Billing APIs
+### 9.2 Billing APIs
+
 - Create payment
-- Get booking bill
-- Daily revenue endpoint
+
+- Get bill for booking
+
+- Daily revenue summary
 
 ---
 
-## Phase 9 — WhatsApp Integration (Later Phase)
+## Phase 10 — WhatsApp Integration (Later Phase)
 
-### 9.1 WhatsApp Setup
-- Meta Cloud API setup
+### 10.1 WhatsApp Setup
+
+- Meta Cloud API
+
 - Template approval
-- Environment variable storage
 
-### 9.2 WhatsApp APIs
-- Booking confirmation trigger
-- Reminder trigger (scheduler)
-- Manual message link generation
+- Secure credential storage
+
+### 10.2 WhatsApp APIs
+
+- Booking confirmation
+
+- Appointment reminder
+
+- Manual message links
 
 ---
 
-## Phase 10 — AI Integration (Optional / Controlled)
+## Phase 11 — AI Integration (Optional & Controlled)
 
-### 10.1 AI Scope
+### 11.1 AI Scope
+
 - Admin-only usage
+
 - Offer suggestions
-- Simple business insights
 
-### 10.2 Safety
+- Simple insights
+
+### 11.2 Safety
+
 - Rate limiting
+
 - Max calls per business per day
-- Fail-safe fallback
+
+- Safe fallback when AI fails
 
 ---
 
-## Phase 11 — API Documentation
+## Phase 12 — API Documentation
 
-### 11.1 Swagger Setup
-- Swagger config
+### 12.1 Swagger
+
+- Swagger setup
+
 - API annotations
-- Auth headers documentation
 
-### 11.2 API Versioning
-- `/api/v1/`
-- Deprecation-ready structure
+- Auth header documentation
+
+### 12.2 Versioning
+
+- `/api/v1`
+
+- Backward-compatible structure
 
 ---
 
-## Phase 12 — Security & Stability
+## Phase 13 — Security, Stability & Testing
 
-### 12.1 Security
-- JWT validation middleware
+### 13.1 Security
+
+- JWT validation
+
 - Business data isolation
+
 - Input validation
-- SQL injection safety
 
-### 12.2 Error Handling
+- SQL injection protection
+
+### 13.2 Error Handling
+
 - Centralized error responses
-- Meaningful HTTP status codes
-- Logging critical failures
 
----
+- Localized error messages
 
-## Phase 13 — Testing & Readiness
+- Proper HTTP status codes
 
-### 13.1 Manual Testing
-- Auth flows
-- Booking conflicts
-- Role enforcement
+### 13.3 Testing & Readiness
 
-### 13.2 Production Readiness
-- Env separation
-- Logging enabled
-- DB backup strategy (basic)
+- Manual testing
+
+- Auth & role checks
+
+- Booking conflict testing
+
+- Production env separation
 
 ---
 
 ## Final Goal
 
-- Production-ready backend
-- Clean Go architecture
-- Multi-tenant SaaS experience
-- Strong Golang backend portfolio project
+- Production-ready Go backend
+
+- Multi-tenant SaaS architecture
+
+- Localization-ready system (English + Hindi)
+
+- Strong backend portfolio project
+
+- Easy future scaling (features, languages, platforms)
