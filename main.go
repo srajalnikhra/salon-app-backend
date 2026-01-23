@@ -5,12 +5,16 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/srajalnikhra/salon-app-backend/internal/config"
+	"github.com/srajalnikhra/salon-app-backend/internal/db"
 )
 
 func main() {
 	config.LoadEnv()
 
 	appConfig := config.LoadAppConfig()
+	dbConfig := config.LoadDBConfig()
+
+	db.ConnectDatabase(dbConfig)
 
 	app := fiber.New()
 
@@ -21,6 +25,7 @@ func main() {
 			"data": fiber.Map{
 				"app": appConfig.Name,
 				"env": appConfig.Env,
+				"db":  "connected",
 			},
 		})
 	})
