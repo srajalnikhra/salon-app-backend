@@ -4,8 +4,10 @@ import (
 	"log"
 
 	"github.com/gofiber/fiber/v2"
+
 	"github.com/srajalnikhra/salon-app-backend/internal/config"
 	"github.com/srajalnikhra/salon-app-backend/internal/db"
+	"github.com/srajalnikhra/salon-app-backend/internal/models"
 )
 
 func main() {
@@ -15,6 +17,14 @@ func main() {
 	dbConfig := config.LoadDBConfig()
 
 	db.ConnectDatabase(dbConfig)
+
+	err := db.DB.AutoMigrate(
+		&models.Admin{},
+		&models.Business{},
+	)
+	if err != nil {
+		log.Fatal("AutoMigrate failed:", err)
+	}
 
 	app := fiber.New()
 
