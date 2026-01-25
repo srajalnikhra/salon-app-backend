@@ -35,29 +35,6 @@ It explains **what to build, in what order, and why**, so that:
 - Architecture: **Controller → Service → Repository**
 - Localization: **Backend-driven messages (i18n-ready)**
 
----
-
-## Folder Structure (Target)
-
-```
-salon-app-backend/
-├── main.go
-├── internal/
-│ ├── config/
-│ ├── db/
-│ ├── models/
-│ ├── controllers/
-│ ├── services/
-│ ├── routes/
-│ ├── middleware/
-│ ├── i18n/
-│ └── utils/
-├── docs/
-├── README.md
-├── Backend_Tasks.md
-├── go.mod
-└── .gitignore
-```
 
 ---
 
@@ -470,3 +447,9 @@ salon-app-backend/
 - Strong backend portfolio project
 
 - Easy future scaling (features, languages, platforms)
+
+---
+
+## New Changes
+
+- Migration strategy: db.AutoMigrate()
