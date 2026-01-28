@@ -10,6 +10,7 @@ func AutoMigrate() {
 	err := DB.AutoMigrate(
 		&models.Admin{},
 		&models.Business{},
+		&models.Staff{},
 	)
 
 	if err != nil {
