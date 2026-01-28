@@ -4,11 +4,11 @@ import "time"
 
 type Business struct {
 	ID        uint      `gorm:"primaryKey"`
+	AdminID   uint      `gorm:"index;not null"`
 	Name      string    `gorm:"not null"`
-	Phone     string    `gorm:"not null"`
+	Phone     string
 	Address   string
-	OwnerID   uint      `gorm:"not null"` // Admin ID
-
+	Timezone  string
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }

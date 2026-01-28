@@ -7,7 +7,6 @@ import (
 
 	"github.com/srajalnikhra/salon-app-backend/internal/config"
 	"github.com/srajalnikhra/salon-app-backend/internal/db"
-	"github.com/srajalnikhra/salon-app-backend/internal/models"
 )
 
 func main() {
@@ -16,15 +15,11 @@ func main() {
 	appConfig := config.LoadAppConfig()
 	dbConfig := config.LoadDBConfig()
 
-	db.ConnectDatabase(dbConfig)
+	// Connect DB using GORM
+	db.ConnectGorm(dbConfig)
 
-	err := db.DB.AutoMigrate(
-		&models.Admin{},
-		&models.Business{},
-	)
-	if err != nil {
-		log.Fatal("AutoMigrate failed:", err)
-	}
+	// Run auto migrations
+	db.AutoMigrate()
 
 	app := fiber.New()
 

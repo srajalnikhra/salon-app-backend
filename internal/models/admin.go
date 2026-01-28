@@ -7,8 +7,8 @@ type Admin struct {
 	Name      string    `gorm:"not null"`
 	Email     string    `gorm:"unique;not null"`
 	Password  string    `gorm:"not null"`
+	IsActive  bool      `gorm:"default:true"`
 
-	Businesses []Business `gorm:"foreignKey:OwnerID"`
 
 	CreatedAt time.Time
 	UpdatedAt time.Time
