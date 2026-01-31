@@ -13,6 +13,7 @@ func AutoMigrate() {
 		&models.Staff{},
 		&models.Service{},
 		&models.Customer{},
+		&models.Booking{},
 	)
 
 	if err != nil {
