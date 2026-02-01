@@ -7,6 +7,7 @@ import (
 
 	"github.com/srajalnikhra/salon-app-backend/internal/config"
 	"github.com/srajalnikhra/salon-app-backend/internal/db"
+	"github.com/srajalnikhra/salon-app-backend/internal/routes"
 )
 
 func main() {
@@ -22,6 +23,8 @@ func main() {
 	db.AutoMigrate()
 
 	app := fiber.New()
+
+	routes.RegisterRoutes(app)
 
 	app.Get("/health", func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{
