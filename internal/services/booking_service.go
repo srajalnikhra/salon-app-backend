@@ -8,7 +8,11 @@ import (
 	"github.com/srajalnikhra/salon-app-backend/internal/models"
 )
 
-var ErrBookingConflict = errors.New("booking time conflicts with an existing booking")
+var (
+	ErrBookingConflict       = errors.New("booking time conflicts with an existing booking")
+	ErrBookingNotFound       = errors.New("booking not found")
+	ErrInvalidBookingState   = errors.New("invalid booking state")
+)
 
 func CheckBookingConflict(
 	businessID uint,
@@ -37,4 +41,37 @@ func CheckBookingConflict(
 	}
 
 	return nil
+}
+
+
+// Approve booking
+func ApproveBooking(bookingID uint) error {
+	var booking models.Booking
+
+	if err := db.DB.First(&booking, bookingID).Error; err != nil {
+		return ErrBookingNotFound
+	}
+
+	if booking.Status != "pending" {
+		return ErrInvalidBookingState
+	}
+
+	booking.Status = "confirmed"
+	return db.DB.Save(&booking).Error
+}
+
+// Cancel booking
+func CancelBooking(bookingID uint) error {
+	var booking models.Booking
+
+	if err := db.DB.First(&booking, bookingID).Error; err != nil {
+		return ErrBookingNotFound
+	}
+
+	if booking.Status == "cancelled" {
+		return ErrInvalidBookingState
+	}
+
+	booking.Status = "cancelled"
+	return db.DB.Save(&booking).Error
 }

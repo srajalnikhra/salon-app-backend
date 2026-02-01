@@ -85,3 +85,47 @@ func CreateBooking(c *fiber.Ctx) error {
 		},
 	})
 }
+
+func ApproveBooking(c *fiber.Ctx) error {
+	id, err := c.ParamsInt("id")
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"success": false,
+			"message": "Invalid booking ID",
+		})
+	}
+
+	if err := services.ApproveBooking(uint(id)); err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"success": false,
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"success": true,
+		"message": "Booking approved",
+	})
+}
+
+func CancelBooking(c *fiber.Ctx) error {
+	id, err := c.ParamsInt("id")
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"success": false,
+			"message": "Invalid booking ID",
+		})
+	}
+
+	if err := services.CancelBooking(uint(id)); err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"success": false,
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"success": true,
+		"message": "Booking cancelled",
+	})
+}
