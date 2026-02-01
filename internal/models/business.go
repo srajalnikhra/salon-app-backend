@@ -11,4 +11,5 @@ type Business struct {
 	Timezone  string
 	CreatedAt time.Time
 	UpdatedAt time.Time
+	IsActive   bool      `gorm:"default:true"`
 }

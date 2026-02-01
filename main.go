@@ -7,6 +7,7 @@ import (
 
 	"github.com/srajalnikhra/salon-app-backend/internal/config"
 	"github.com/srajalnikhra/salon-app-backend/internal/db"
+	"github.com/srajalnikhra/salon-app-backend/internal/db/seed"
 	"github.com/srajalnikhra/salon-app-backend/internal/routes"
 )
 
@@ -19,8 +20,9 @@ func main() {
 	// Connect DB using GORM
 	db.ConnectGorm(dbConfig)
 
-	// Run auto migrations
 	db.AutoMigrate()
+
+	seed.SeedInitialData()
 
 	app := fiber.New()
 
