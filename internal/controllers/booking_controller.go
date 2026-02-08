@@ -129,3 +129,52 @@ func CancelBooking(c *fiber.Ctx) error {
 		"message": "Booking cancelled",
 	})
 }
+
+func ListBookings(c *fiber.Ctx) error {
+	// 1. business_id (REQUIRED)
+	businessID := c.QueryInt("business_id", 0)
+	if businessID == 0 {
+		return c.Status(400).JSON(fiber.Map{
+			"success": false,
+			"message": "business_id is required",
+		})
+	}
+
+	// 2. optional date (YYYY-MM-DD)
+	var date *time.Time
+	if dateStr := c.Query("date"); dateStr != "" {
+		parsed, err := time.Parse("2006-01-02", dateStr)
+		if err != nil {
+			return c.Status(400).JSON(fiber.Map{
+				"success": false,
+				"message": "invalid date format (use YYYY-MM-DD)",
+			})
+		}
+		date = &parsed
+	}
+
+	// 3. optional staff_id
+	var staffID *uint
+	if sid := c.QueryInt("staff_id", 0); sid != 0 {
+		id := uint(sid)
+		staffID = &id
+	}
+
+	// 4. fetch bookings
+	bookings, err := services.ListBookings(
+		uint(businessID),
+		date,
+		staffID,
+	)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"success": false,
+			"message": "failed to fetch bookings",
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"success": true,
+		"data":    bookings,
+	})
+}

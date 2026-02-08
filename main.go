@@ -22,7 +22,7 @@ func main() {
 
 	db.AutoMigrate()
 
-	seed.SeedInitialData()
+	seed.Run()
 
 	app := fiber.New()
 

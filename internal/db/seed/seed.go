@@ -3,23 +3,24 @@ package seed
 import (
 	"log"
 
-	"golang.org/x/crypto/bcrypt"
-
 	"github.com/srajalnikhra/salon-app-backend/internal/db"
 	"github.com/srajalnikhra/salon-app-backend/internal/models"
+	"golang.org/x/crypto/bcrypt"
 )
 
-func SeedInitialData() {
-	seedAdmin()
-	seedBusiness()
+func Run() {
+	admin := seedAdmin()
+	seedBusiness(admin.ID)
 	seedServices()
 }
 
-func seedAdmin() {
+func seedAdmin() models.Admin {
 	var count int64
 	db.DB.Model(&models.Admin{}).Count(&count)
 	if count > 0 {
-		return
+		var admin models.Admin
+		db.DB.First(&admin)
+		return admin
 	}
 
 	password, _ := bcrypt.GenerateFromPassword([]byte("admin123"), bcrypt.DefaultCost)
@@ -33,9 +34,10 @@ func seedAdmin() {
 
 	db.DB.Create(&admin)
 	log.Println("Admin seeded")
+	return admin
 }
 
-func seedBusiness() {
+func seedBusiness(adminID uint) {
 	var count int64
 	db.DB.Model(&models.Business{}).Count(&count)
 	if count > 0 {
@@ -43,8 +45,11 @@ func seedBusiness() {
 	}
 
 	business := models.Business{
+		AdminID:  adminID,
 		Name:     "Demo Salon",
 		Phone:    "9999999999",
+		Address:  "Demo Address",
+		Timezone: "Asia/Kolkata",
 		IsActive: true,
 	}
 
@@ -60,27 +65,8 @@ func seedServices() {
 	}
 
 	services := []models.Service{
-		{
-			BusinessID: 1,
-			Name:       "Haircut",
-			Duration:   30,
-			Price:      200,
-			IsActive:   true,
-		},
-		{
-			BusinessID: 1,
-			Name:       "Shave",
-			Duration:   15,
-			Price:      100,
-			IsActive:   true,
-		},
-		{
-			BusinessID: 1,
-			Name:       "Hair Spa",
-			Duration:   45,
-			Price:      500,
-			IsActive:   true,
-		},
+		{BusinessID: 1, Name: "Haircut", Duration: 30, Price: 200, IsActive: true},
+		{BusinessID: 1, Name: "Shave", Duration: 15, Price: 100, IsActive: true},
 	}
 
 	db.DB.Create(&services)
