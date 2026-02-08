@@ -22,6 +22,9 @@ func CreateBooking(c *fiber.Ctx) error {
 		})
 	}
 
+	businessID := c.Locals("business_id").(uint)
+
+
 	// 1. Fetch service (to get duration)
 	var service models.Service
 	if err := db.DB.First(&service, req.ServiceID).Error; err != nil {
@@ -36,7 +39,7 @@ func CreateBooking(c *fiber.Ctx) error {
 
 	// 3. Conflict check
 	if err := services.CheckBookingConflict(
-		req.BusinessID,
+		businessID,
 		req.StaffID,
 		req.StartTime,
 		endTime,
@@ -50,12 +53,12 @@ func CreateBooking(c *fiber.Ctx) error {
 	// 4. Find or create customer
 	var customer models.Customer
 	err := db.DB.
-		Where("business_id = ? AND phone = ?", req.BusinessID, req.Customer.Phone).
+		Where("business_id = ? AND phone = ?", businessID, req.Customer.Phone).
 		First(&customer).Error
 
 	if err != nil {
 		customer = models.Customer{
-			BusinessID: req.BusinessID,
+			BusinessID: businessID,
 			Name:       req.Customer.Name,
 			Phone:      req.Customer.Phone,
 		}
@@ -64,7 +67,7 @@ func CreateBooking(c *fiber.Ctx) error {
 
 	// 5. Create booking
 	booking := models.Booking{
-		BusinessID: req.BusinessID,
+		BusinessID: businessID,
 		CustomerID: customer.ID,
 		ServiceID:  req.ServiceID,
 		StaffID:    req.StaffID,
@@ -131,14 +134,8 @@ func CancelBooking(c *fiber.Ctx) error {
 }
 
 func ListBookings(c *fiber.Ctx) error {
-	// 1. business_id (REQUIRED)
-	businessID := c.QueryInt("business_id", 0)
-	if businessID == 0 {
-		return c.Status(400).JSON(fiber.Map{
-			"success": false,
-			"message": "business_id is required",
-		})
-	}
+	// 1. Get business_id from JWT token (via middleware)
+	businessID := c.Locals("business_id").(uint)
 
 	// 2. optional date (YYYY-MM-DD)
 	var date *time.Time
@@ -162,7 +159,7 @@ func ListBookings(c *fiber.Ctx) error {
 
 	// 4. fetch bookings
 	bookings, err := services.ListBookings(
-		uint(businessID),
+		businessID,
 		date,
 		staffID,
 	)

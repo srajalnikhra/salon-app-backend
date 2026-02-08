@@ -453,3 +453,5 @@ It explains **what to build, in what order, and why**, so that:
 ## New Changes
 
 - Migration strategy: db.AutoMigrate()
+- Booking engine (create, list, approve, cancel) implemented early to validate core business logic before authentication and RBAC.
+- Core booking logic validated using Postman instead of Swagger during early development.
