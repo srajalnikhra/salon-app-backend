@@ -2,7 +2,7 @@
 
 ## Backend Task Plan (Go + Fiber + PostgreSQL)
 
-_Single Developer • Backend-First • Multi-Tenant SaaS_
+### Single Developer • Backend-First • Multi-Tenant SaaS
 
 This document is the **single source of truth** for backend development.
 It explains **what to build, in what order, and why**, so that:
@@ -34,7 +34,6 @@ It explains **what to build, in what order, and why**, so that:
 - API Style: **REST**
 - Architecture: **Controller → Service → Repository**
 - Localization: **Backend-driven messages (i18n-ready)**
-
 
 ---
 
