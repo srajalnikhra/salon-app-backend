@@ -22,6 +22,8 @@ func RegisterRoutes(app *fiber.App) {
 	admin.Post("/bookings", controllers.CreateBooking)
 	admin.Put("/bookings/:id/approve", controllers.ApproveBooking)
 	admin.Put("/bookings/:id/cancel", controllers.CancelBooking)
+	admin.Post("/staff/:staffId/services/:serviceId", controllers.AssignServiceToStaff)
+	admin.Delete("/staff/:staffId/services/:serviceId", controllers.RemoveServiceFromStaff)
 
 	// Staff + Admin
 	protected.Get("/bookings", controllers.ListBookings)

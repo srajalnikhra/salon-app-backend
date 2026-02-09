@@ -24,7 +24,6 @@ func CreateBooking(c *fiber.Ctx) error {
 
 	businessID := c.Locals("business_id").(uint)
 
-
 	// 1. Fetch service (to get duration)
 	var service models.Service
 	if err := db.DB.First(&service, req.ServiceID).Error; err != nil {
@@ -37,7 +36,17 @@ func CreateBooking(c *fiber.Ctx) error {
 	// 2. Calculate end time
 	endTime := req.StartTime.Add(time.Duration(service.Duration) * time.Minute)
 
-	// 3. Conflict check
+	// 3. Check staff-service assignment
+	if req.StaffID != nil {
+		if !services.IsStaffAllowedForService(businessID, *req.StaffID, req.ServiceID) {
+			return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+				"success": false,
+				"message": "Staff is not assigned to this service",
+			})
+		}
+	}
+
+	// 4. Conflict check
 	if err := services.CheckBookingConflict(
 		businessID,
 		req.StaffID,
