@@ -2,7 +2,6 @@ package routes
 
 import (
 	"github.com/gofiber/fiber/v2"
-
 	"github.com/srajalnikhra/salon-app-backend/internal/controllers"
 	"github.com/srajalnikhra/salon-app-backend/internal/middleware"
 )
@@ -13,12 +12,17 @@ func RegisterRoutes(app *fiber.App) {
 	// Auth
 	api.Post("/admin/signup", controllers.AdminSignup)
 	api.Post("/admin/login", controllers.AdminLogin)
+	api.Post("/staff/login", controllers.StaffLogin)
 
-	// Protected Booking APIs
-	protected := api.Group("", middleware.AdminAuth())
+	// Protected
+	protected := api.Group("", middleware.Auth())
 
-	protected.Post("/bookings", controllers.CreateBooking)
-	protected.Put("/bookings/:id/approve", controllers.ApproveBooking)
-	protected.Put("/bookings/:id/cancel", controllers.CancelBooking)
+	// Admin only
+	admin := protected.Group("", middleware.AdminOnly())
+	admin.Post("/bookings", controllers.CreateBooking)
+	admin.Put("/bookings/:id/approve", controllers.ApproveBooking)
+	admin.Put("/bookings/:id/cancel", controllers.CancelBooking)
+
+	// Staff + Admin
 	protected.Get("/bookings", controllers.ListBookings)
 }

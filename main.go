@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/gofiber/fiber/v2"
@@ -9,6 +10,7 @@ import (
 	"github.com/srajalnikhra/salon-app-backend/internal/db"
 	"github.com/srajalnikhra/salon-app-backend/internal/db/seed"
 	"github.com/srajalnikhra/salon-app-backend/internal/routes"
+	"github.com/srajalnikhra/salon-app-backend/internal/utils"
 )
 
 func main() {
@@ -23,6 +25,9 @@ func main() {
 	db.AutoMigrate()
 
 	seed.Run()
+
+	hash, _ := utils.HashPassword("1234")
+	fmt.Println(hash)
 
 	app := fiber.New()
 

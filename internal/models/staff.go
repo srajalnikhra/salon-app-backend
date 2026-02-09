@@ -4,10 +4,10 @@ import "time"
 
 type Staff struct {
 	ID         uint      `gorm:"primaryKey"`
-	BusinessID uint      `gorm:"index;not null"` // tenant isolation
+	BusinessID uint      `gorm:"index;not null"`
 	Name       string    `gorm:"not null"`
 	Phone      string    `gorm:"not null"`
-	Role       string    // e.g. barber, stylist, receptionist
+	PIN        string    `gorm:"not null"` // hashed
 	IsActive   bool      `gorm:"default:true"`
 	CreatedAt  time.Time
 	UpdatedAt  time.Time

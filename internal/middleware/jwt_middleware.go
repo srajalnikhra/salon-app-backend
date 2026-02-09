@@ -9,7 +9,7 @@ import (
 	"github.com/srajalnikhra/salon-app-backend/internal/utils"
 )
 
-func AdminAuth() fiber.Handler {
+func Auth() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		authHeader := c.Get("Authorization")
 		if authHeader == "" {
@@ -23,7 +23,7 @@ func AdminAuth() fiber.Handler {
 
 		token, err := jwt.ParseWithClaims(
 			tokenString,
-			&utils.AdminClaims{},
+			&utils.Claims{},
 			func(token *jwt.Token) (interface{}, error) {
 				return []byte(config.LoadJWTConfig().Secret), nil
 			},
@@ -36,12 +36,30 @@ func AdminAuth() fiber.Handler {
 			})
 		}
 
-		claims := token.Claims.(*utils.AdminClaims)
+		claims := token.Claims.(*utils.Claims)
 
-		// Inject context
-		c.Locals("admin_id", claims.AdminID)
 		c.Locals("business_id", claims.BusinessID)
+		c.Locals("role", claims.Role)
 
+		if claims.AdminID != nil {
+			c.Locals("admin_id", *claims.AdminID)
+		}
+		if claims.StaffID != nil {
+			c.Locals("staff_id", *claims.StaffID)
+		}
+
+		return c.Next()
+	}
+}
+
+func AdminOnly() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		if c.Locals("role") != "admin" {
+			return c.Status(403).JSON(fiber.Map{
+				"success": false,
+				"message": "Admin access required",
+			})
+		}
 		return c.Next()
 	}
 }
