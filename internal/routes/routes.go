@@ -14,16 +14,19 @@ func RegisterRoutes(app *fiber.App) {
 	api.Post("/admin/login", controllers.AdminLogin)
 	api.Post("/staff/login", controllers.StaffLogin)
 
-	// Protected
+	// Protected (JWT required)
 	protected := api.Group("", middleware.Auth())
 
-	// Admin only
-	admin := protected.Group("", middleware.AdminOnly())
+	// Admin only routes
+	admin := protected.Group("/admin", middleware.AdminOnly())
 	admin.Post("/bookings", controllers.CreateBooking)
 	admin.Put("/bookings/:id/approve", controllers.ApproveBooking)
 	admin.Put("/bookings/:id/cancel", controllers.CancelBooking)
+
 	admin.Post("/staff/:staffId/services/:serviceId", controllers.AssignServiceToStaff)
 	admin.Delete("/staff/:staffId/services/:serviceId", controllers.RemoveServiceFromStaff)
+
+	// ✅ FIXED ENDPOINT (admin clearly owns this)
 	admin.Post("/staff/:staffId/availability", controllers.SetStaffAvailability)
 
 	// Staff + Admin
