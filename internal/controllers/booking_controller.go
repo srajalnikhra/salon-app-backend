@@ -44,6 +44,14 @@ func CreateBooking(c *fiber.Ctx) error {
 				"message": "Staff is not assigned to this service",
 			})
 		}
+
+		// Check availability
+		if !services.IsStaffAvailableForBooking(businessID, *req.StaffID, req.StartTime, endTime) {
+			return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+				"success": false,
+				"message": "Staff is not available at the selected time",
+			})
+		}
 	}
 
 	// 4. Conflict check

@@ -15,6 +15,7 @@ func AutoMigrate() {
 		&models.Customer{},
 		&models.Booking{},
 		&models.StaffService{},
+		&models.StaffAvailability{},
 	)
 
 	if err != nil {
