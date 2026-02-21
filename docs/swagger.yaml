@@ -1,0 +1,92 @@
+basePath: /api/v1
+definitions:
+  controllers.AdminLoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  controllers.AdminSignupRequest:
+    properties:
+      business_id:
+        type: integer
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+    type: object
+host: localhost:3000
+info:
+  contact:
+    email: srajal@example.com
+    name: Srajal
+  description: Multi-tenant Salon Management Backend built with Go + Fiber
+  termsOfService: http://example.com/terms/
+  title: Salon Management Backend API
+  version: "1.0"
+paths:
+  /admin/login:
+    post:
+      consumes:
+      - application/json
+      description: Login admin using email and password
+      parameters:
+      - description: Admin login payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.AdminLoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Admin login
+      tags:
+      - Admin Auth
+  /admin/signup:
+    post:
+      consumes:
+      - application/json
+      description: Create a new admin account
+      parameters:
+      - description: Admin signup payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.AdminSignupRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Admin signup
+      tags:
+      - Admin Auth
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

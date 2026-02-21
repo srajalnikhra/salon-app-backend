@@ -18,6 +18,16 @@ type AdminLoginRequest struct {
 	Password string `json:"password"`
 }
 
+// AdminSignup godoc
+// @Summary Admin signup
+// @Description Create a new admin account
+// @Tags Admin Auth
+// @Accept json
+// @Produce json
+// @Param payload body AdminSignupRequest true "Admin signup payload"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Router /admin/signup [post]
 func AdminSignup(c *fiber.Ctx) error {
 	var req AdminSignupRequest
 	if err := c.BodyParser(&req); err != nil {
@@ -37,6 +47,16 @@ func AdminSignup(c *fiber.Ctx) error {
 	})
 }
 
+// AdminLogin godoc
+// @Summary Admin login
+// @Description Login admin using email and password
+// @Tags Admin Auth
+// @Accept json
+// @Produce json
+// @Param payload body AdminLoginRequest true "Admin login payload"
+// @Success 200 {object} map[string]interface{}
+// @Failure 401 {object} map[string]interface{}
+// @Router /admin/login [post]
 func AdminLogin(c *fiber.Ctx) error {
 	var req AdminLoginRequest
 	if err := c.BodyParser(&req); err != nil {
