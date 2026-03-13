@@ -12,6 +12,7 @@
 // @securityDefinitions.apikey BearerAuth
 // @in header
 // @name Authorization
+// @description Enter: Bearer {your_jwt_token}
 
 package main
 

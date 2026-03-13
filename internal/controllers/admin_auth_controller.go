@@ -20,13 +20,13 @@ type AdminLoginRequest struct {
 
 // AdminSignup godoc
 // @Summary Admin signup
-// @Description Create a new admin account
+// @Description Create a new admin account and auto-login
 // @Tags Admin Auth
 // @Accept json
 // @Produce json
 // @Param payload body AdminSignupRequest true "Admin signup payload"
-// @Success 200 {object} map[string]interface{}
-// @Failure 400 {object} map[string]interface{}
+// @Success 200 {object} AuthResponse
+// @Failure 400 {object} ErrorResponse
 // @Router /admin/signup [post]
 func AdminSignup(c *fiber.Ctx) error {
 	var req AdminSignupRequest
@@ -54,8 +54,9 @@ func AdminSignup(c *fiber.Ctx) error {
 // @Accept json
 // @Produce json
 // @Param payload body AdminLoginRequest true "Admin login payload"
-// @Success 200 {object} map[string]interface{}
-// @Failure 401 {object} map[string]interface{}
+// @Success 200 {object} AuthResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
 // @Router /admin/login [post]
 func AdminLogin(c *fiber.Ctx) error {
 	var req AdminLoginRequest

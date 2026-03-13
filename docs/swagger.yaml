@@ -18,6 +18,63 @@ definitions:
       password:
         type: string
     type: object
+  controllers.AuthResponse:
+    properties:
+      success:
+        type: boolean
+      token:
+        type: string
+    type: object
+  controllers.ErrorResponse:
+    properties:
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  controllers.StaffLoginRequest:
+    properties:
+      phone:
+        type: string
+      pin:
+        type: string
+    type: object
+  dto.CreateBookingRequest:
+    properties:
+      customer:
+        properties:
+          name:
+            example: Rahul
+            type: string
+          phone:
+            example: "9876543210"
+            type: string
+        type: object
+      notes:
+        example: Haircut booking
+        type: string
+      service_id:
+        example: 1
+        type: integer
+      staff_id:
+        example: 2
+        type: integer
+      start_time:
+        example: "2026-03-03T11:00:00Z"
+        type: string
+    type: object
+  dto.SetAvailabilityRequest:
+    properties:
+      day_of_week:
+        example: 1
+        type: integer
+      end_time:
+        example: "18:00"
+        type: string
+      start_time:
+        example: "09:00"
+        type: string
+    type: object
 host: localhost:3000
 info:
   contact:
@@ -28,6 +85,110 @@ info:
   title: Salon Management Backend API
   version: "1.0"
 paths:
+  /admin/bookings:
+    post:
+      consumes:
+      - application/json
+      description: Create a new booking (Admin only)
+      parameters:
+      - description: Booking data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateBookingRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create booking
+      tags:
+      - Bookings
+  /admin/bookings/{id}/approve:
+    put:
+      description: Approve a pending booking (Admin only)
+      parameters:
+      - description: Booking ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Approve booking
+      tags:
+      - Bookings
+  /admin/bookings/{id}/cancel:
+    put:
+      description: Cancel a booking (Admin only)
+      parameters:
+      - description: Booking ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Cancel booking
+      tags:
+      - Bookings
   /admin/login:
     post:
       consumes:
@@ -46,13 +207,15 @@ paths:
         "200":
           description: OK
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/controllers.AuthResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/controllers.ErrorResponse'
       summary: Admin login
       tags:
       - Admin Auth
@@ -60,7 +223,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Create a new admin account
+      description: Create a new admin account and auto-login
       parameters:
       - description: Admin signup payload
         in: body
@@ -74,6 +237,37 @@ paths:
         "200":
           description: OK
           schema:
+            $ref: '#/definitions/controllers.AuthResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      summary: Admin signup
+      tags:
+      - Admin Auth
+  /admin/staff/{staffId}/availability:
+    post:
+      consumes:
+      - application/json
+      description: Define working hours for a staff member
+      parameters:
+      - description: Staff ID
+        in: path
+        name: staffId
+        required: true
+        type: integer
+      - description: Availability data
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.SetAvailabilityRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
             additionalProperties: true
             type: object
         "400":
@@ -81,11 +275,157 @@ paths:
           schema:
             additionalProperties: true
             type: object
-      summary: Admin signup
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Set staff availability
       tags:
-      - Admin Auth
+      - Staff Availability
+  /admin/staff/{staffId}/services/{serviceId}:
+    delete:
+      description: Remove a service assignment from a staff member
+      parameters:
+      - description: Staff ID
+        in: path
+        name: staffId
+        required: true
+        type: integer
+      - description: Service ID
+        in: path
+        name: serviceId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Remove service from staff
+      tags:
+      - Staff Services
+    post:
+      description: Assign a service to a staff member (Admin only)
+      parameters:
+      - description: Staff ID
+        in: path
+        name: staffId
+        required: true
+        type: integer
+      - description: Service ID
+        in: path
+        name: serviceId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Assign service to staff
+      tags:
+      - Staff Services
+  /bookings:
+    get:
+      description: Get bookings (Admin or Staff)
+      parameters:
+      - description: Filter by date (YYYY-MM-DD)
+        in: query
+        name: date
+        type: string
+      - description: Filter by staff ID
+        in: query
+        name: staff_id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List bookings
+      tags:
+      - Bookings
+  /staff/login:
+    post:
+      consumes:
+      - application/json
+      description: Login staff using phone and PIN
+      parameters:
+      - description: Staff login payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.StaffLoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.AuthResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      summary: Staff login
+      tags:
+      - Staff Auth
 securityDefinitions:
   BearerAuth:
+    description: 'Enter: Bearer {your_jwt_token}'
     in: header
     name: Authorization
     type: apiKey

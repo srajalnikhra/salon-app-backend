@@ -11,6 +11,17 @@ type StaffLoginRequest struct {
 	PIN   string `json:"pin"`
 }
 
+// StaffLogin godoc
+// @Summary Staff login
+// @Description Login staff using phone and PIN
+// @Tags Staff Auth
+// @Accept json
+// @Produce json
+// @Param payload body StaffLoginRequest true "Staff login payload"
+// @Success 200 {object} AuthResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Router /staff/login [post]
 func StaffLogin(c *fiber.Ctx) error {
 	var req StaffLoginRequest
 	if err := c.BodyParser(&req); err != nil {

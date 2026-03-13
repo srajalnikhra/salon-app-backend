@@ -12,6 +12,19 @@ import (
 	"github.com/srajalnikhra/salon-app-backend/internal/services"
 )
 
+// CreateBooking godoc
+// @Summary Create booking
+// @Description Create a new booking (Admin only)
+// @Tags Bookings
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body dto.CreateBookingRequest true "Booking data"
+// @Success 201 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Failure 401 {object} map[string]interface{}
+// @Failure 409 {object} map[string]interface{}
+// @Router /admin/bookings [post]
 func CreateBooking(c *fiber.Ctx) error {
 	var req dto.CreateBookingRequest
 
@@ -24,7 +37,7 @@ func CreateBooking(c *fiber.Ctx) error {
 
 	businessID := c.Locals("business_id").(uint)
 
-	// 1. Fetch service (to get duration)
+	// Fetch service
 	var service models.Service
 	if err := db.DB.First(&service, req.ServiceID).Error; err != nil {
 		return c.Status(http.StatusNotFound).JSON(fiber.Map{
@@ -33,10 +46,10 @@ func CreateBooking(c *fiber.Ctx) error {
 		})
 	}
 
-	// 2. Calculate end time
+	// Calculate end time
 	endTime := req.StartTime.Add(time.Duration(service.Duration) * time.Minute)
 
-	// 3. Check staff-service assignment
+	// Check staff-service assignment
 	if req.StaffID != nil {
 		if !services.IsStaffAllowedForService(businessID, *req.StaffID, req.ServiceID) {
 			return c.Status(http.StatusBadRequest).JSON(fiber.Map{
@@ -45,7 +58,6 @@ func CreateBooking(c *fiber.Ctx) error {
 			})
 		}
 
-		// Check availability
 		if !services.IsStaffAvailableForBooking(businessID, *req.StaffID, req.StartTime, endTime) {
 			return c.Status(http.StatusBadRequest).JSON(fiber.Map{
 				"success": false,
@@ -54,7 +66,7 @@ func CreateBooking(c *fiber.Ctx) error {
 		}
 	}
 
-	// 4. Conflict check
+	// Conflict check
 	if err := services.CheckBookingConflict(
 		businessID,
 		req.StaffID,
@@ -67,8 +79,9 @@ func CreateBooking(c *fiber.Ctx) error {
 		})
 	}
 
-	// 4. Find or create customer
+	// Find or create customer
 	var customer models.Customer
+
 	err := db.DB.
 		Where("business_id = ? AND phone = ?", businessID, req.Customer.Phone).
 		First(&customer).Error
@@ -79,10 +92,11 @@ func CreateBooking(c *fiber.Ctx) error {
 			Name:       req.Customer.Name,
 			Phone:      req.Customer.Phone,
 		}
+
 		db.DB.Create(&customer)
 	}
 
-	// 5. Create booking
+	// Create booking
 	booking := models.Booking{
 		BusinessID: businessID,
 		CustomerID: customer.ID,
@@ -106,6 +120,17 @@ func CreateBooking(c *fiber.Ctx) error {
 	})
 }
 
+// ApproveBooking godoc
+// @Summary Approve booking
+// @Description Approve a pending booking (Admin only)
+// @Tags Bookings
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Booking ID"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Failure 401 {object} map[string]interface{}
+// @Router /admin/bookings/{id}/approve [put]
 func ApproveBooking(c *fiber.Ctx) error {
 	id, err := c.ParamsInt("id")
 	if err != nil {
@@ -128,6 +153,17 @@ func ApproveBooking(c *fiber.Ctx) error {
 	})
 }
 
+// CancelBooking godoc
+// @Summary Cancel booking
+// @Description Cancel a booking (Admin only)
+// @Tags Bookings
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Booking ID"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Failure 401 {object} map[string]interface{}
+// @Router /admin/bookings/{id}/cancel [put]
 func CancelBooking(c *fiber.Ctx) error {
 	id, err := c.ParamsInt("id")
 	if err != nil {
@@ -150,6 +186,18 @@ func CancelBooking(c *fiber.Ctx) error {
 	})
 }
 
+// ListBookings godoc
+// @Summary List bookings
+// @Description Get bookings (Admin or Staff)
+// @Tags Bookings
+// @Produce json
+// @Security BearerAuth
+// @Param date query string false "Filter by date (YYYY-MM-DD)"
+// @Param staff_id query int false "Filter by staff ID"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Failure 401 {object} map[string]interface{}
+// @Router /bookings [get]
 func ListBookings(c *fiber.Ctx) error {
 	// 1. Get business_id from JWT token (via middleware)
 	businessID := c.Locals("business_id").(uint)
