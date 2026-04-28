@@ -29,24 +29,34 @@ import (
 	"github.com/srajalnikhra/salon-app-backend/internal/routes"
 )
 
+// main initializes and starts the Salon Management API server
 func main() {
+	// Load environment variables from .env file
 	config.LoadEnv()
 
+	// Load application configuration (name, env, port)
 	appConfig := config.LoadAppConfig()
+	// Load database configuration (host, port, user, password, etc.)
 	dbConfig := config.LoadDBConfig()
 
-	// Connect DB using GORM
+	// Establish connection to PostgreSQL database
 	db.ConnectGorm(dbConfig)
 
+	// Auto-create/update database tables from model definitions
 	db.AutoMigrate()
 
+	// Populate database with initial sample data
 	seed.Run()
 
+	// Create new Fiber web framework instance
 	app := fiber.New()
 
+	// Register all API routes (public, protected, admin routes)
 	routes.RegisterRoutes(app)
+	// Setup Swagger API documentation endpoint
 	app.Get("/swagger/*", fiberSwagger.HandlerDefault)
 
+	// Health check endpoint for monitoring
 	app.Get("/health", func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{
 			"success": true,

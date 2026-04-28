@@ -1,13 +1,16 @@
 package config
 
+// DBConfig stores database connection configuration
+// These settings are used to establish a connection to PostgreSQL
 type DBConfig struct {
-	Host     string
-	Port     string
-	User     string
-	Password string
-	Name     string
+	Host     string // Database host address
+	Port     string // Database port
+	User     string // Database user
+	Password string // Database password
+	Name     string // Database name
 }
 
+// LoadDBConfig loads database configuration from environment variables
 func LoadDBConfig() DBConfig {
 	return DBConfig{
 		Host:     GetEnv("DB_HOST", "localhost"),

@@ -12,20 +12,11 @@ import (
 	"github.com/srajalnikhra/salon-app-backend/internal/services"
 )
 
-// CreateBooking godoc
-// @Summary Create booking
-// @Description Create a new booking (Admin only)
-// @Tags Bookings
-// @Accept json
-// @Produce json
-// @Security BearerAuth
-// @Param request body dto.CreateBookingRequest true "Booking data"
-// @Success 201 {object} map[string]interface{}
-// @Failure 400 {object} map[string]interface{}
-// @Failure 401 {object} map[string]interface{}
-// @Failure 409 {object} map[string]interface{}
-// @Router /admin/bookings [post]
+// CreateBooking handles booking creation with full validation
+// Admin must provide customer info, service, and optional staff assignment
+// Returns error if staff is unavailable or booking time conflicts
 func CreateBooking(c *fiber.Ctx) error {
+	// Parse and validate incoming booking request
 	var req dto.CreateBookingRequest
 
 	if err := c.BodyParser(&req); err != nil {
@@ -58,6 +49,7 @@ func CreateBooking(c *fiber.Ctx) error {
 			})
 		}
 
+		// Check if assigned staff is available during booking time
 		if !services.IsStaffAvailableForBooking(businessID, *req.StaffID, req.StartTime, endTime) {
 			return c.Status(http.StatusBadRequest).JSON(fiber.Map{
 				"success": false,
@@ -66,7 +58,7 @@ func CreateBooking(c *fiber.Ctx) error {
 		}
 	}
 
-	// Conflict check
+	// Check for scheduling conflicts (only if staff is assigned)
 	if err := services.CheckBookingConflict(
 		businessID,
 		req.StaffID,
@@ -79,7 +71,7 @@ func CreateBooking(c *fiber.Ctx) error {
 		})
 	}
 
-	// Find or create customer
+	// Find or create customer in database
 	var customer models.Customer
 
 	err := db.DB.
@@ -96,7 +88,7 @@ func CreateBooking(c *fiber.Ctx) error {
 		db.DB.Create(&customer)
 	}
 
-	// Create booking
+	// Create booking record with all details
 	booking := models.Booking{
 		BusinessID: businessID,
 		CustomerID: customer.ID,

@@ -7,28 +7,22 @@ import (
 	"github.com/srajalnikhra/salon-app-backend/internal/utils"
 )
 
+// StaffLoginRequest holds credentials for staff authentication
 type StaffLoginRequest struct {
-	Phone string `json:"phone"`
-	PIN   string `json:"pin"`
+	Phone string `json:"phone"` // Staff phone number
+	PIN   string `json:"pin"`   // Staff PIN
 }
 
-// StaffLogin godoc
-// @Summary Staff login
-// @Description Login staff using phone and PIN
-// @Tags Staff Auth
-// @Accept json
-// @Produce json
-// @Param payload body StaffLoginRequest true "Staff login payload"
-// @Success 200 {object} AuthResponse
-// @Failure 400 {object} ErrorResponse
-// @Failure 401 {object} ErrorResponse
-// @Router /staff/login [post]
+// StaffLogin authenticates staff member and returns JWT token
+// Uses phone and PIN instead of email/password
 func StaffLogin(c *fiber.Ctx) error {
+	// Parse JSON request body
 	var req StaffLoginRequest
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(400).JSON(fiber.Map{"success": false})
 	}
 
+	// Call service layer to validate staff credentials
 	staff, err := services.StaffLogin(req.Phone, req.PIN)
 	if err != nil {
 		return c.Status(401).JSON(fiber.Map{
@@ -37,28 +31,20 @@ func StaffLogin(c *fiber.Ctx) error {
 		})
 	}
 
+	// Generate JWT token for authenticated staff member
 	token, _ := utils.GenerateStaffToken(staff.ID, staff.BusinessID)
 
+	// Return success response with token
 	return c.JSON(fiber.Map{
 		"success": true,
 		"token":   token,
 	})
 }
 
-// CreateStaff godoc
-// @Summary Create staff account
-// @Description Create a new staff member (Admin only)
-// @Tags Staff Auth
-// @Accept json
-// @Produce json
-// @Security BearerAuth
-// @Param payload body dto.CreateStaffRequest true "Staff creation payload"
-// @Success 201 {object} map[string]interface{}
-// @Failure 400 {object} ErrorResponse
-// @Failure 401 {object} ErrorResponse
-// @Failure 403 {object} ErrorResponse
-// @Router /admin/staff [post]
+// CreateStaff allows admin to create new staff member
+// Calls service layer for validation and DB operations
 func CreateStaff(c *fiber.Ctx) error {
+	// Parse JSON request body into CreateStaffRequest DTO
 	var req dto.CreateStaffRequest
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(400).JSON(fiber.Map{
@@ -67,10 +53,10 @@ func CreateStaff(c *fiber.Ctx) error {
 		})
 	}
 
-	// Get business_id from JWT claims
+	// Extract business_id from JWT claims set by Auth middleware
 	businessID := c.Locals("business_id").(uint)
 
-	// Create staff
+	// Call service layer to create staff record with validation
 	staff, err := services.CreateStaff(businessID, req.Name, req.Phone, req.PIN, req.Role)
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{
@@ -79,6 +65,7 @@ func CreateStaff(c *fiber.Ctx) error {
 		})
 	}
 
+	// Return success response with created staff details
 	return c.Status(201).JSON(fiber.Map{
 		"success": true,
 		"message": "Staff created successfully",

@@ -35,8 +35,10 @@ func SetStaffAvailability(c *fiber.Ctx) error {
 		})
 	}
 
+	// Extract business_id from JWT token
 	businessID := c.Locals("business_id").(uint)
 
+	// Parse request body
 	var payload struct {
 		DayOfWeek int    `json:"day_of_week"`
 		StartTime string `json:"start_time"`
@@ -50,7 +52,7 @@ func SetStaffAvailability(c *fiber.Ctx) error {
 		})
 	}
 
-	// Check staff exists
+	// Verify staff exists and belongs to this business
 	var staff models.Staff
 	if err := db.DB.Where("id = ? AND business_id = ?", staffID, businessID).
 		First(&staff).Error; err != nil {
@@ -61,7 +63,7 @@ func SetStaffAvailability(c *fiber.Ctx) error {
 		})
 	}
 
-	// Check duplicate availability
+	// Check if availability already exists for this day
 	var existing models.StaffAvailability
 	err = db.DB.Where(
 		"staff_id = ? AND day_of_week = ?",
@@ -76,6 +78,7 @@ func SetStaffAvailability(c *fiber.Ctx) error {
 		})
 	}
 
+	// Create availability record
 	availability := models.StaffAvailability{
 		BusinessID: businessID,
 		StaffID:    uint(staffID),
@@ -86,6 +89,7 @@ func SetStaffAvailability(c *fiber.Ctx) error {
 
 	db.DB.Create(&availability)
 
+	// Return success response
 	return c.JSON(fiber.Map{
 		"success": true,
 		"message": "Staff availability set",

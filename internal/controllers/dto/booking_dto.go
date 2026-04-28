@@ -2,7 +2,10 @@ package dto
 
 import "time"
 
+// CreateBookingRequest is the DTO for creating a new booking
+// Separates HTTP request payload from internal models for validation and security
 type CreateBookingRequest struct {
+	// Nested customer info for quick lookup or creation
 	Customer struct {
 		Name  string `json:"name" example:"Rahul"`
 		Phone string `json:"phone" example:"9876543210"`

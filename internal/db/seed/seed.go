@@ -8,12 +8,18 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// Run executes all database seeding operations
+// Populates initial data for testing and demo purposes
 func Run() {
+	// Create super admin user for system
 	admin := seedAdmin()
+	// Create demo salon business linked to admin
 	seedBusiness(admin.ID)
+	// Add sample salon services
 	seedServices()
 }
 
+// seedAdmin creates initial admin account if it doesn't exist
 func seedAdmin() models.Admin {
 	var count int64
 	db.DB.Model(&models.Admin{}).Count(&count)
@@ -37,6 +43,7 @@ func seedAdmin() models.Admin {
 	return admin
 }
 
+// seedBusiness creates a demo salon business for the admin
 func seedBusiness(adminID uint) {
 	var count int64
 	db.DB.Model(&models.Business{}).Count(&count)
@@ -57,6 +64,7 @@ func seedBusiness(adminID uint) {
 	log.Println("Business seeded")
 }
 
+// seedServices creates sample salon services
 func seedServices() {
 	var count int64
 	db.DB.Model(&models.Service{}).Count(&count)

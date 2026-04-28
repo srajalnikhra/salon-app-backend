@@ -9,8 +9,12 @@ import (
 	"github.com/srajalnikhra/salon-app-backend/internal/utils"
 )
 
+// Auth is middleware that validates JWT tokens and extracts user information
+// Intercepts incoming requests and checks for valid Bearer token in Authorization header
+// Extracts user claims and stores them in request context for downstream handlers
 func Auth() fiber.Handler {
 	return func(c *fiber.Ctx) error {
+		// Retrieve Authorization header from incoming request
 		authHeader := c.Get("Authorization")
 		if authHeader == "" {
 			return c.Status(401).JSON(fiber.Map{
@@ -19,8 +23,10 @@ func Auth() fiber.Handler {
 			})
 		}
 
+		// Extract token from Bearer {token} format
 		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 
+		// Parse and validate JWT token using secret key
 		token, err := jwt.ParseWithClaims(
 			tokenString,
 			&utils.Claims{},
@@ -29,6 +35,7 @@ func Auth() fiber.Handler {
 			},
 		)
 
+		// Return 401 if token is invalid or expired
 		if err != nil || !token.Valid {
 			return c.Status(401).JSON(fiber.Map{
 				"success": false,
@@ -36,11 +43,14 @@ func Auth() fiber.Handler {
 			})
 		}
 
+		// Extract claims from validated token
 		claims := token.Claims.(*utils.Claims)
 
+		// Store user information in request context for downstream handlers
 		c.Locals("business_id", claims.BusinessID)
 		c.Locals("role", claims.Role)
 
+		// Store admin or staff ID if present
 		if claims.AdminID != nil {
 			c.Locals("admin_id", *claims.AdminID)
 		}
@@ -52,14 +62,19 @@ func Auth() fiber.Handler {
 	}
 }
 
+// AdminOnly is middleware that checks if user has admin role
+// Must be applied after Auth middleware to ensure token validation
+// Blocks access for non-admin users (staff members)
 func AdminOnly() fiber.Handler {
 	return func(c *fiber.Ctx) error {
+		// Check if user role stored by Auth middleware is admin
 		if c.Locals("role") != "admin" {
 			return c.Status(403).JSON(fiber.Map{
 				"success": false,
 				"message": "Admin access required",
 			})
 		}
+		// Proceed to next handler if admin
 		return c.Next()
 	}
 }

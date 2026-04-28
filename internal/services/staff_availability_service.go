@@ -8,17 +8,14 @@ import (
 	"github.com/srajalnikhra/salon-app-backend/internal/models"
 )
 
+// SetStaffAvailability creates working hours schedule for staff on a specific day
+// Prevents duplicate entries for same day and validates time logic
 func SetStaffAvailability(businessID, staffID uint, dayOfWeek int, start, end time.Time) error {
-	// Validate start < end
-	// Since we care about time of day, we extract HH:mm and parse back to time relative to same day, or simply compare if on same day
-	// But start and end might be from arbitrary dates passed by controller.
-	// The prompt implies we receive time.Time. Let's compare limits.
-	// We'll normalize to just HH:mm comparison logic or assume valid same-day times.
-	// Usually controller parses "09:00" to 0000-01-01 09:00:00.
-
+	// Extract just HH:mm from time values
 	startStr := start.Format("15:04")
 	endStr := end.Format("15:04")
 
+	// Validate start time is before end time
 	if startStr >= endStr {
 		return errors.New("start time must be before end time")
 	}
@@ -48,39 +45,43 @@ func SetStaffAvailability(businessID, staffID uint, dayOfWeek int, start, end ti
 	return db.DB.Create(&availability).Error
 }
 
+// IsStaffAvailableForBooking checks if staff is available during requested booking time
+// Validates day of week and time overlap with staff availability
 func IsStaffAvailableForBooking(businessID, staffID uint, bookingStart, bookingEnd time.Time) bool {
-	// Determine day_of_week
+	// Determine day of week (0=Sunday, 6=Saturday)
 	dayOfWeek := int(bookingStart.Weekday())
 
-	// Find availability
+	// Look up availability record for this staff and day
 	var availability models.StaffAvailability
 	err := db.DB.Where("business_id = ? AND staff_id = ? AND day_of_week = ?", businessID, staffID, dayOfWeek).
 		First(&availability).Error
 
+	// If no availability found, staff is not scheduled
 	if err != nil {
-		return false // No availability found = not working
+		return false
 	}
 
-	// Parse stored times relative to booking date
+	// Parse stored times and create full datetime on booking date
 	layout := "15:04"
 
-	// Create availStart and availEnd on the same date as bookingStart
-	// We need year, month, day from bookingStart
+	// Extract date from booking start time
 	y, m, d := bookingStart.Date()
 
 	availStartParsed, err := time.Parse(layout, availability.StartTime)
 	if err != nil {
 		return false
 	}
+	// Construct availability start time with booking date
 	availStart := time.Date(y, m, d, availStartParsed.Hour(), availStartParsed.Minute(), 0, 0, bookingStart.Location())
 
 	availEndParsed, err := time.Parse(layout, availability.EndTime)
 	if err != nil {
 		return false
 	}
+	// Construct availability end time with booking date
 	availEnd := time.Date(y, m, d, availEndParsed.Hour(), availEndParsed.Minute(), 0, 0, bookingStart.Location())
 
-	// Check if booking fits
+	// Check if booking time fits within staff availability
 	// bookingStart >= availStart AND bookingEnd <= availEnd
 	if (bookingStart.Equal(availStart) || bookingStart.After(availStart)) &&
 		(bookingEnd.Equal(availEnd) || bookingEnd.Before(availEnd)) {
