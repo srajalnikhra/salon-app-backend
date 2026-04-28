@@ -264,6 +264,64 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/staff": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new staff member (Admin only)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Staff Auth"
+                ],
+                "summary": "Create staff account",
+                "parameters": [
+                    {
+                        "description": "Staff creation payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateStaffRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/controllers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/controllers.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/controllers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/staff/{staffId}/availability": {
             "post": {
                 "security": [
@@ -629,6 +687,27 @@ const docTemplate = `{
                 "start_time": {
                     "type": "string",
                     "example": "2026-03-03T11:00:00Z"
+                }
+            }
+        },
+        "dto.CreateStaffRequest": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "example": "Staff One"
+                },
+                "phone": {
+                    "type": "string",
+                    "example": "9999999999"
+                },
+                "pin": {
+                    "type": "string",
+                    "example": "1234"
+                },
+                "role": {
+                    "type": "string",
+                    "example": "barber"
                 }
             }
         },

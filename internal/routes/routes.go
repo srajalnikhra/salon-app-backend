@@ -23,6 +23,7 @@ func RegisterRoutes(app *fiber.App) {
 	admin.Put("/bookings/:id/approve", controllers.ApproveBooking)
 	admin.Put("/bookings/:id/cancel", controllers.CancelBooking)
 
+	admin.Post("/staff", controllers.CreateStaff)
 	admin.Post("/staff/:staffId/services/:serviceId", controllers.AssignServiceToStaff)
 	admin.Delete("/staff/:staffId/services/:serviceId", controllers.RemoveServiceFromStaff)
 

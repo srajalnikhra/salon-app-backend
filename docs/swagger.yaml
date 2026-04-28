@@ -63,6 +63,21 @@ definitions:
         example: "2026-03-03T11:00:00Z"
         type: string
     type: object
+  dto.CreateStaffRequest:
+    properties:
+      name:
+        example: Staff One
+        type: string
+      phone:
+        example: "9999999999"
+        type: string
+      pin:
+        example: "1234"
+        type: string
+      role:
+        example: barber
+        type: string
+    type: object
   dto.SetAvailabilityRequest:
     properties:
       day_of_week:
@@ -245,6 +260,43 @@ paths:
       summary: Admin signup
       tags:
       - Admin Auth
+  /admin/staff:
+    post:
+      consumes:
+      - application/json
+      description: Create a new staff member (Admin only)
+      parameters:
+      - description: Staff creation payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateStaffRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create staff account
+      tags:
+      - Staff Auth
   /admin/staff/{staffId}/availability:
     post:
       consumes:
