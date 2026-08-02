@@ -45,4 +45,11 @@ func RegisterRoutes(app *fiber.App) {
 	// ===== STAFF + ADMIN SHARED ROUTES =====
 	// List bookings accessible to both staff and admins
 	protected.Get("/bookings", controllers.ListBookings)
+
+	// Service management
+	admin.Post("/services", controllers.CreateService)
+	protected.Get("/services", controllers.ListServices)
+	protected.Get("/services/:id", controllers.GetServiceByID)
+	admin.Put("/services/:id", controllers.UpdateService)
+	admin.Delete("/services/:id", controllers.DeleteService)
 }

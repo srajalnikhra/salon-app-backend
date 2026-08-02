@@ -39,7 +39,7 @@ const docTemplate = `{
                 "summary": "Create booking",
                 "parameters": [
                     {
-                        "description": "Booking data",
+                        "description": "Booking Details",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -65,13 +65,6 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "409": {
-                        "description": "Conflict",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -180,7 +173,7 @@ const docTemplate = `{
         },
         "/admin/login": {
             "post": {
-                "description": "Login admin using email and password",
+                "description": "Login as admin",
                 "consumes": [
                     "application/json"
                 ],
@@ -188,17 +181,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin Auth"
+                    "Authentication"
                 ],
                 "summary": "Admin login",
                 "parameters": [
                     {
-                        "description": "Admin login payload",
-                        "name": "payload",
+                        "description": "Admin Login",
+                        "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/controllers.AdminLoginRequest"
+                            "$ref": "#/definitions/dto.AdminLoginRequest"
                         }
                     }
                 ],
@@ -206,19 +199,177 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controllers.AuthResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/controllers.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/controllers.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/services": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Creates a new salon service for the authenticated business (Admin only)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Services"
+                ],
+                "summary": "Create a new service",
+                "parameters": [
+                    {
+                        "description": "Service Details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateServiceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/services/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Updates an existing service for the authenticated business (Admin only)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Services"
+                ],
+                "summary": "Update service",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Service ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated Service",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateServiceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Soft deletes a service by marking it inactive (Admin only)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Services"
+                ],
+                "summary": "Delete service",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Service ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     }
                 }
@@ -226,7 +377,7 @@ const docTemplate = `{
         },
         "/admin/signup": {
             "post": {
-                "description": "Create a new admin account and auto-login",
+                "description": "Register a new admin account",
                 "consumes": [
                     "application/json"
                 ],
@@ -234,17 +385,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin Auth"
+                    "Authentication"
                 ],
                 "summary": "Admin signup",
                 "parameters": [
                     {
-                        "description": "Admin signup payload",
-                        "name": "payload",
+                        "description": "Admin Signup",
+                        "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/controllers.AdminSignupRequest"
+                            "$ref": "#/definitions/dto.AdminSignupRequest"
                         }
                     }
                 ],
@@ -252,13 +403,15 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controllers.AuthResponse"
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/controllers.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     }
                 }
@@ -279,13 +432,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Staff Auth"
+                    "Staff"
                 ],
-                "summary": "Create staff account",
+                "summary": "Create staff",
                 "parameters": [
                     {
-                        "description": "Staff creation payload",
-                        "name": "payload",
+                        "description": "Staff Details",
+                        "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -304,19 +457,15 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/controllers.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/controllers.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/controllers.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     }
                 }
@@ -444,7 +593,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Remove a service assignment from a staff member",
+                "description": "Remove an assigned service from a staff member (Admin only)",
                 "produces": [
                     "application/json"
                 ],
@@ -547,9 +696,105 @@ const docTemplate = `{
                 }
             }
         },
+        "/services": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns all active services for the logged-in business",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Services"
+                ],
+                "summary": "List services",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/services/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns a single active service belonging to the logged-in business",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Services"
+                ],
+                "summary": "Get service by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Service ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/staff/login": {
             "post": {
-                "description": "Login staff using phone and PIN",
+                "description": "Login as staff and receive JWT token",
                 "consumes": [
                     "application/json"
                 ],
@@ -557,17 +802,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Staff Auth"
+                    "Authentication"
                 ],
                 "summary": "Staff login",
                 "parameters": [
                     {
-                        "description": "Staff login payload",
-                        "name": "payload",
+                        "description": "Staff Login",
+                        "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/controllers.StaffLoginRequest"
+                            "$ref": "#/definitions/dto.StaffLoginRequest"
                         }
                     }
                 ],
@@ -575,19 +820,15 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controllers.AuthResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/controllers.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/controllers.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     }
                 }
@@ -595,64 +836,37 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "controllers.AdminLoginRequest": {
+        "dto.AdminLoginRequest": {
             "type": "object",
             "properties": {
                 "email": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "admin@gmail.com"
                 },
                 "password": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "password123"
                 }
             }
         },
-        "controllers.AdminSignupRequest": {
+        "dto.AdminSignupRequest": {
             "type": "object",
             "properties": {
                 "business_id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 1
                 },
                 "email": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "admin@gmail.com"
                 },
                 "name": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Srajal"
                 },
                 "password": {
-                    "type": "string"
-                }
-            }
-        },
-        "controllers.AuthResponse": {
-            "type": "object",
-            "properties": {
-                "success": {
-                    "type": "boolean"
-                },
-                "token": {
-                    "type": "string"
-                }
-            }
-        },
-        "controllers.ErrorResponse": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
-                },
-                "success": {
-                    "type": "boolean"
-                }
-            }
-        },
-        "controllers.StaffLoginRequest": {
-            "type": "object",
-            "properties": {
-                "phone": {
-                    "type": "string"
-                },
-                "pin": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "password123"
                 }
             }
         },
@@ -660,6 +874,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "customer": {
+                    "description": "Nested customer info for quick lookup or creation",
                     "type": "object",
                     "properties": {
                         "name": {
@@ -690,22 +905,46 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.CreateServiceRequest": {
+            "type": "object",
+            "properties": {
+                "duration": {
+                    "description": "Duration in minutes",
+                    "type": "integer",
+                    "example": 30
+                },
+                "name": {
+                    "description": "Service name",
+                    "type": "string",
+                    "example": "Hair Cut"
+                },
+                "price": {
+                    "description": "Service price",
+                    "type": "number",
+                    "example": 250
+                }
+            }
+        },
         "dto.CreateStaffRequest": {
             "type": "object",
             "properties": {
                 "name": {
+                    "description": "Staff member full name",
                     "type": "string",
                     "example": "Staff One"
                 },
                 "phone": {
+                    "description": "Contact number (used for login)",
                     "type": "string",
                     "example": "9999999999"
                 },
                 "pin": {
+                    "description": "PIN for staff login (will be hashed)",
                     "type": "string",
                     "example": "1234"
                 },
                 "role": {
+                    "description": "Position/role in salon",
                     "type": "string",
                     "example": "barber"
                 }
@@ -715,16 +954,52 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "day_of_week": {
+                    "description": "Day (0=Sunday, 1=Monday, ..., 6=Saturday)",
                     "type": "integer",
                     "example": 1
                 },
                 "end_time": {
+                    "description": "Work end time (HH:mm format)",
                     "type": "string",
                     "example": "18:00"
                 },
                 "start_time": {
+                    "description": "Work start time (HH:mm format)",
                     "type": "string",
                     "example": "09:00"
+                }
+            }
+        },
+        "dto.StaffLoginRequest": {
+            "type": "object",
+            "properties": {
+                "phone": {
+                    "type": "string",
+                    "example": "9876543210"
+                },
+                "pin": {
+                    "type": "string",
+                    "example": "1234"
+                }
+            }
+        },
+        "dto.UpdateServiceRequest": {
+            "type": "object",
+            "properties": {
+                "duration": {
+                    "description": "Updated duration in minutes",
+                    "type": "integer",
+                    "example": 45
+                },
+                "name": {
+                    "description": "Updated service name",
+                    "type": "string",
+                    "example": "Hair Spa"
+                },
+                "price": {
+                    "description": "Updated service price",
+                    "type": "number",
+                    "example": 600
                 }
             }
         }

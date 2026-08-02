@@ -8,3 +8,9 @@ type CreateStaffRequest struct {
 	PIN   string `json:"pin" example:"1234"`         // PIN for staff login (will be hashed)
 	Role  string `json:"role" example:"barber"`      // Position/role in salon
 }
+
+// StaffLoginRequest is the request body for staff login.
+type StaffLoginRequest struct {
+	Phone string `json:"phone" example:"9876543210"`
+	PIN   string `json:"pin" example:"1234"`
+}

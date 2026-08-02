@@ -15,6 +15,18 @@ import (
 // CreateBooking handles booking creation with full validation
 // Admin must provide customer info, service, and optional staff assignment
 // Returns error if staff is unavailable or booking time conflicts
+// CreateBooking godoc
+// @Summary Create booking
+// @Description Create a new booking (Admin only)
+// @Tags Bookings
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body dto.CreateBookingRequest true "Booking Details"
+// @Success 201 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Failure 401 {object} map[string]interface{}
+// @Router /admin/bookings [post]
 func CreateBooking(c *fiber.Ctx) error {
 	// Parse and validate incoming booking request
 	var req dto.CreateBookingRequest
