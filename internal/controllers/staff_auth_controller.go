@@ -7,17 +7,21 @@ import (
 	"github.com/srajalnikhra/salon-app-backend/internal/utils"
 )
 
-// StaffLoginRequest holds credentials for staff authentication
-type StaffLoginRequest struct {
-	Phone string `json:"phone"` // Staff phone number
-	PIN   string `json:"pin"`   // Staff PIN
-}
-
 // StaffLogin authenticates staff member and returns JWT token
 // Uses phone and PIN instead of email/password
+// StaffLogin godoc
+// @Summary Staff login
+// @Description Login as staff and receive JWT token
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Param request body dto.StaffLoginRequest true "Staff Login"
+// @Success 200 {object} map[string]interface{}
+// @Failure 401 {object} map[string]interface{}
+// @Router /staff/login [post]
 func StaffLogin(c *fiber.Ctx) error {
 	// Parse JSON request body
-	var req StaffLoginRequest
+	var req dto.StaffLoginRequest
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(400).JSON(fiber.Map{"success": false})
 	}
@@ -43,6 +47,18 @@ func StaffLogin(c *fiber.Ctx) error {
 
 // CreateStaff allows admin to create new staff member
 // Calls service layer for validation and DB operations
+// CreateStaff godoc
+// @Summary Create staff
+// @Description Create a new staff member (Admin only)
+// @Tags Staff
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body dto.CreateStaffRequest true "Staff Details"
+// @Success 201 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Failure 401 {object} map[string]interface{}
+// @Router /admin/staff [post]
 func CreateStaff(c *fiber.Ctx) error {
 	// Parse JSON request body into CreateStaffRequest DTO
 	var req dto.CreateStaffRequest

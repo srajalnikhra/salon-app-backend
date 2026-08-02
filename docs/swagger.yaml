@@ -1,47 +1,33 @@
 basePath: /api/v1
 definitions:
-  controllers.AdminLoginRequest:
+  dto.AdminLoginRequest:
     properties:
       email:
+        example: admin@gmail.com
         type: string
       password:
+        example: password123
         type: string
     type: object
-  controllers.AdminSignupRequest:
+  dto.AdminSignupRequest:
     properties:
       business_id:
+        example: 1
         type: integer
       email:
+        example: admin@gmail.com
         type: string
       name:
+        example: Srajal
         type: string
       password:
-        type: string
-    type: object
-  controllers.AuthResponse:
-    properties:
-      success:
-        type: boolean
-      token:
-        type: string
-    type: object
-  controllers.ErrorResponse:
-    properties:
-      message:
-        type: string
-      success:
-        type: boolean
-    type: object
-  controllers.StaffLoginRequest:
-    properties:
-      phone:
-        type: string
-      pin:
+        example: password123
         type: string
     type: object
   dto.CreateBookingRequest:
     properties:
       customer:
+        description: Nested customer info for quick lookup or creation
         properties:
           name:
             example: Rahul
@@ -63,32 +49,78 @@ definitions:
         example: "2026-03-03T11:00:00Z"
         type: string
     type: object
+  dto.CreateServiceRequest:
+    properties:
+      duration:
+        description: Duration in minutes
+        example: 30
+        type: integer
+      name:
+        description: Service name
+        example: Hair Cut
+        type: string
+      price:
+        description: Service price
+        example: 250
+        type: number
+    type: object
   dto.CreateStaffRequest:
     properties:
       name:
+        description: Staff member full name
         example: Staff One
         type: string
       phone:
+        description: Contact number (used for login)
         example: "9999999999"
         type: string
       pin:
+        description: PIN for staff login (will be hashed)
         example: "1234"
         type: string
       role:
+        description: Position/role in salon
         example: barber
         type: string
     type: object
   dto.SetAvailabilityRequest:
     properties:
       day_of_week:
+        description: Day (0=Sunday, 1=Monday, ..., 6=Saturday)
         example: 1
         type: integer
       end_time:
+        description: Work end time (HH:mm format)
         example: "18:00"
         type: string
       start_time:
+        description: Work start time (HH:mm format)
         example: "09:00"
         type: string
+    type: object
+  dto.StaffLoginRequest:
+    properties:
+      phone:
+        example: "9876543210"
+        type: string
+      pin:
+        example: "1234"
+        type: string
+    type: object
+  dto.UpdateServiceRequest:
+    properties:
+      duration:
+        description: Updated duration in minutes
+        example: 45
+        type: integer
+      name:
+        description: Updated service name
+        example: Hair Spa
+        type: string
+      price:
+        description: Updated service price
+        example: 600
+        type: number
     type: object
 host: localhost:3000
 info:
@@ -106,7 +138,7 @@ paths:
       - application/json
       description: Create a new booking (Admin only)
       parameters:
-      - description: Booking data
+      - description: Booking Details
         in: body
         name: request
         required: true
@@ -127,11 +159,6 @@ paths:
             type: object
         "401":
           description: Unauthorized
-          schema:
-            additionalProperties: true
-            type: object
-        "409":
-          description: Conflict
           schema:
             additionalProperties: true
             type: object
@@ -208,67 +235,175 @@ paths:
     post:
       consumes:
       - application/json
-      description: Login admin using email and password
+      description: Login as admin
       parameters:
-      - description: Admin login payload
+      - description: Admin Login
         in: body
-        name: payload
+        name: request
         required: true
         schema:
-          $ref: '#/definitions/controllers.AdminLoginRequest'
+          $ref: '#/definitions/dto.AdminLoginRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/controllers.AuthResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/controllers.ErrorResponse'
+            additionalProperties: true
+            type: object
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/controllers.ErrorResponse'
+            additionalProperties: true
+            type: object
       summary: Admin login
       tags:
-      - Admin Auth
+      - Authentication
+  /admin/services:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new salon service for the authenticated business (Admin
+        only)
+      parameters:
+      - description: Service Details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateServiceRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new service
+      tags:
+      - Services
+  /admin/services/{id}:
+    delete:
+      description: Soft deletes a service by marking it inactive (Admin only)
+      parameters:
+      - description: Service ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete service
+      tags:
+      - Services
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing service for the authenticated business (Admin
+        only)
+      parameters:
+      - description: Service ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated Service
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateServiceRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update service
+      tags:
+      - Services
   /admin/signup:
     post:
       consumes:
       - application/json
-      description: Create a new admin account and auto-login
+      description: Register a new admin account
       parameters:
-      - description: Admin signup payload
+      - description: Admin Signup
         in: body
-        name: payload
+        name: request
         required: true
         schema:
-          $ref: '#/definitions/controllers.AdminSignupRequest'
+          $ref: '#/definitions/dto.AdminSignupRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/controllers.AuthResponse'
+            additionalProperties: true
+            type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/controllers.ErrorResponse'
+            additionalProperties: true
+            type: object
       summary: Admin signup
       tags:
-      - Admin Auth
+      - Authentication
   /admin/staff:
     post:
       consumes:
       - application/json
       description: Create a new staff member (Admin only)
       parameters:
-      - description: Staff creation payload
+      - description: Staff Details
         in: body
-        name: payload
+        name: request
         required: true
         schema:
           $ref: '#/definitions/dto.CreateStaffRequest'
@@ -283,20 +418,18 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/controllers.ErrorResponse'
+            additionalProperties: true
+            type: object
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/controllers.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/controllers.ErrorResponse'
+            additionalProperties: true
+            type: object
       security:
       - BearerAuth: []
-      summary: Create staff account
+      summary: Create staff
       tags:
-      - Staff Auth
+      - Staff
   /admin/staff/{staffId}/availability:
     post:
       consumes:
@@ -339,7 +472,7 @@ paths:
       - Staff Availability
   /admin/staff/{staffId}/services/{serviceId}:
     delete:
-      description: Remove a service assignment from a staff member
+      description: Remove an assigned service from a staff member (Admin only)
       parameters:
       - description: Staff ID
         in: path
@@ -445,36 +578,97 @@ paths:
       summary: List bookings
       tags:
       - Bookings
-  /staff/login:
-    post:
-      consumes:
-      - application/json
-      description: Login staff using phone and PIN
-      parameters:
-      - description: Staff login payload
-        in: body
-        name: payload
-        required: true
-        schema:
-          $ref: '#/definitions/controllers.StaffLoginRequest'
+  /services:
+    get:
+      description: Returns all active services for the logged-in business
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/controllers.AuthResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/controllers.ErrorResponse'
+            additionalProperties: true
+            type: object
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/controllers.ErrorResponse'
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List services
+      tags:
+      - Services
+  /services/{id}:
+    get:
+      description: Returns a single active service belonging to the logged-in business
+      parameters:
+      - description: Service ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get service by ID
+      tags:
+      - Services
+  /staff/login:
+    post:
+      consumes:
+      - application/json
+      description: Login as staff and receive JWT token
+      parameters:
+      - description: Staff Login
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.StaffLoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
       summary: Staff login
       tags:
-      - Staff Auth
+      - Authentication
 securityDefinitions:
   BearerAuth:
     description: 'Enter: Bearer {your_jwt_token}'

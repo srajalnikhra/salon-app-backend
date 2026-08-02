@@ -94,6 +94,18 @@ func AssignServiceToStaff(c *fiber.Ctx) error {
 
 // RemoveServiceFromStaff allows admin to unassign a service from staff member
 // Service assignment is deleted from database
+// RemoveServiceFromStaff godoc
+// @Summary Remove service from staff
+// @Description Remove an assigned service from a staff member (Admin only)
+// @Tags Staff Services
+// @Produce json
+// @Security BearerAuth
+// @Param staffId path int true "Staff ID"
+// @Param serviceId path int true "Service ID"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Failure 401 {object} map[string]interface{}
+// @Router /admin/staff/{staffId}/services/{serviceId} [delete]
 func RemoveServiceFromStaff(c *fiber.Ctx) error {
 	// Extract business_id from JWT token
 	businessID := c.Locals("business_id").(uint)
